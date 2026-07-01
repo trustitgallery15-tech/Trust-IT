@@ -289,6 +289,31 @@ export default function AdminPanel({
     setShowProductModal(true);
   };
 
+  const handleCreateProductInCategoryClick = (categoryName: string) => {
+    setEditingProduct(null);
+    setProductForm({
+      name: '', 
+      price: 15000, 
+      discountPrice: 0, 
+      category: categoryName, 
+      brand: brands[0]?.name || 'Intel', 
+      model: '', 
+      sku: `TG-${Math.floor(1000 + Math.random() * 9000)}`,
+      description: '', 
+      features: 'Direct Brand Warranty, high reliability, optimal heat dispatch', 
+      specifications: JSON.stringify({ "Warranty": "3 Years", "Status": "New" }, null, 2),
+      stockCount: 15, 
+      stockStatus: 'In Stock',
+      isFeatured: false,
+      isFlashDeal: false,
+      isTrending: false,
+      isBestSeller: false
+    });
+    setTempImageUrls(['']);
+    setUseCustomCategoryText(false);
+    setShowProductModal(true);
+  };
+
   // --- Toggle Product Flags Quickly ---
   const handleToggleProductFlag = async (prod: Product, flag: 'isFeatured' | 'isFlashDeal' | 'isTrending' | 'isBestSeller') => {
     const updated = {
@@ -1011,7 +1036,7 @@ export default function AdminPanel({
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {categories.map(c => (
-                      <div key={c.id} className="border border-gray-100 rounded-xl p-4 bg-white hover:shadow-md transition flex items-center justify-between">
+                      <div key={c.id} className="border border-gray-100 rounded-xl p-4 bg-white hover:shadow-md transition flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 overflow-hidden font-mono font-bold">
                             {c.imageUrl ? <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : c.name.slice(0, 2).toUpperCase()}
@@ -1021,20 +1046,30 @@ export default function AdminPanel({
                             <p className="text-[10px] text-gray-400">Total matched products: {products.filter(p => p.category === c.name).length}</p>
                           </div>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                          <button
+                            type="button"
+                            onClick={() => handleCreateProductInCategoryClick(c.name)}
+                            title={`Add product to ${c.name}`}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-600 text-[10px] font-bold py-1 px-2.5 rounded-lg flex items-center gap-1 transition cursor-pointer"
+                          >
+                            <Plus size={11} /> Add Product
+                          </button>
                           <button
                             onClick={() => {
                               setEditingCategory(c);
                               setCategoryForm(c);
                               setShowCategoryModal(true);
                             }}
-                            className="p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition"
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition"
+                            title="Edit Category"
                           >
                             <Edit3 size={14} />
                           </button>
                           <button
                             onClick={() => handleDeleteCategory(c.id)}
-                            className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition"
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition"
+                            title="Delete Category"
                           >
                             <Trash2 size={14} />
                           </button>
