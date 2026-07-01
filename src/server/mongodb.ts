@@ -25,6 +25,7 @@ const UserSchema = new mongoose.Schema({
   loyaltyPoints: { type: Number, default: 0 },
   referredBy: String,
   referralCode: String,
+  disabled: { type: Boolean, default: false },
   createdAt: { type: String, default: () => new Date().toISOString() }
 });
 
@@ -59,6 +60,10 @@ const ProductSchema = new mongoose.Schema({
   estimatedDelivery: String,
   views: { type: Number, default: 0 },
   sales: { type: Number, default: 0 },
+  isFeatured: { type: Boolean, default: false },
+  isFlashDeal: { type: Boolean, default: false },
+  isTrending: { type: Boolean, default: false },
+  isBestSeller: { type: Boolean, default: false },
   createdAt: { type: String, default: () => new Date().toISOString() }
 });
 

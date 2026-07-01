@@ -190,6 +190,11 @@ export default function Footer({ setCurrentView, onSearch }: FooterProps) {
                   Privacy Security
                 </button>
               </li>
+              <li className="pt-2 border-t border-gray-800/50">
+                <button onClick={() => handleLinkClick('admin-login')} className="text-gray-500 hover:text-blue-400 text-[11px] font-mono hover:translate-x-1 transition-transform flex items-center gap-1">
+                  🔐 Admin Control Panel
+                </button>
+              </li>
             </ul>
           </div>
 

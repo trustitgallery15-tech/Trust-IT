@@ -446,7 +446,11 @@ async function startServer() {
       const isLoginAdmin = emailLower === 'admin' || emailLower === adminEmail || emailLower === adminUserEnv.toLowerCase();
 
       if (isLoginAdmin) {
-        if (password === adminPassEnv) {
+        // Hash the admin password at runtime to use bcrypt hashing for verification
+        const hashedAdminPassword = await bcrypt.hash(adminPassEnv, 10);
+        const isAdminPasswordCorrect = await bcrypt.compare(password, hashedAdminPassword);
+
+        if (isAdminPasswordCorrect) {
           const adminUser: User = {
             id: 'user-admin',
             email: 'admin@trustitgallery.com',
@@ -965,6 +969,101 @@ async function startServer() {
       res.json(users);
     } catch (err) {
       res.status(500).json({ error: 'Failed to load users list.' });
+    }
+  });
+
+  // Toggle user status (Enable/Disable Customer)
+  app.put('/api/admin/users/:id/toggle', requireAdmin, async (req, res) => {
+    try {
+      const users = await repo.getUsers();
+      const userToToggle = users.find(u => u.id === req.params.id);
+      if (!userToToggle) {
+        res.status(404).json({ error: 'User not found.' });
+        return;
+      }
+      userToToggle.disabled = !userToToggle.disabled;
+      const updatedUser = await repo.saveUser(userToToggle);
+      
+      await repo.saveActivityLog({
+        id: `log-${Date.now()}`,
+        adminEmail: req.user.email,
+        action: 'Toggle User Status',
+        details: `${userToToggle.disabled ? 'Disabled' : 'Enabled'} user email: ${userToToggle.email}`,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json(updatedUser);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to toggle user status.' });
+    }
+  });
+
+  // Admin reviews list
+  app.get('/api/admin/reviews', requireAdmin, async (req, res) => {
+    try {
+      const reviews = await repo.getAllReviews();
+      res.json(reviews);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to load reviews.' });
+    }
+  });
+
+  // Approve review
+  app.put('/api/admin/reviews/:id/approve', requireAdmin, async (req, res) => {
+    try {
+      const reviews = await repo.getAllReviews();
+      const review = reviews.find(r => r.id === req.params.id);
+      if (!review) {
+        res.status(404).json({ error: 'Review not found.' });
+        return;
+      }
+      review.approved = true;
+      const updated = await repo.saveReview(review);
+
+      await repo.saveActivityLog({
+        id: `log-${Date.now()}`,
+        adminEmail: req.user.email,
+        action: 'Approve Review',
+        details: `Approved review ID: ${review.id} by ${review.userName}`,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to approve review.' });
+    }
+  });
+
+  // Delete review
+  app.delete('/api/admin/reviews/:id', requireAdmin, async (req, res) => {
+    try {
+      const deleted = await repo.deleteReview(req.params.id);
+      if (!deleted) {
+        res.status(404).json({ error: 'Review not found.' });
+        return;
+      }
+
+      await repo.saveActivityLog({
+        id: `log-${Date.now()}`,
+        adminEmail: req.user.email,
+        action: 'Delete Review',
+        details: `Deleted review ID: ${req.params.id}`,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to delete review.' });
+    }
+  });
+
+  // Admin newsletter subscribers
+  app.get('/api/admin/newsletter', requireAdmin, async (req, res) => {
+    try {
+      const emails = await repo.getNewsletterEmails();
+      res.json(emails);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to load newsletter subscribers.' });
     }
   });
 

@@ -13,6 +13,7 @@ import ProductDetails from './components/ProductDetails.js';
 import Checkout from './components/Checkout.js';
 import Dashboard from './components/Dashboard.js';
 import AdminPanel from './components/AdminPanel.js';
+import AdminLogin from './components/AdminLogin.js';
 import PCBuilder from './components/PCBuilder.js';
 import B2BRequest from './components/B2BRequest.js';
 import Compare from './components/Compare.js';
@@ -21,8 +22,39 @@ import DiscountPopup from './components/DiscountPopup.js';
 
 export default function App() {
   
-  // App views state
-  const [currentView, setCurrentView] = useState<string>('home');
+  // App views state with URL synchronization
+  const [currentView, _setCurrentView] = useState<string>(() => {
+    const path = window.location.pathname;
+    if (path === '/admin/login') return 'admin-login';
+    if (path === '/admin/dashboard') return 'admin-dashboard';
+    if (path === '/shop') return 'shop';
+    if (path === '/b2b') return 'b2b';
+    if (path === '/pc-builder') return 'pc-builder';
+    if (path === '/compare') return 'compare';
+    if (path === '/dashboard') return 'dashboard';
+    return 'home';
+  });
+
+  const setCurrentView = (view: string) => {
+    _setCurrentView(view);
+    if (view === 'home') {
+      window.history.pushState({}, '', '/');
+    } else if (view === 'shop') {
+      window.history.pushState({}, '', '/shop');
+    } else if (view === 'b2b') {
+      window.history.pushState({}, '', '/b2b');
+    } else if (view === 'pc-builder') {
+      window.history.pushState({}, '', '/pc-builder');
+    } else if (view === 'compare') {
+      window.history.pushState({}, '', '/compare');
+    } else if (view === 'dashboard') {
+      window.history.pushState({}, '', '/dashboard');
+    } else if (view === 'admin-login') {
+      window.history.pushState({}, '', '/admin/login');
+    } else if (view === 'admin-dashboard' || view === 'admin') {
+      window.history.pushState({}, '', '/admin/dashboard');
+    }
+  };
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
 
@@ -82,6 +114,41 @@ export default function App() {
   }, []);
 
   // Sync session user if token persists in localStorage
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/admin/login') {
+        _setCurrentView('admin-login');
+      } else if (path === '/admin/dashboard') {
+        _setCurrentView('admin-dashboard');
+      } else if (path === '/shop') {
+        _setCurrentView('shop');
+      } else if (path === '/b2b') {
+        _setCurrentView('b2b');
+      } else if (path === '/pc-builder') {
+        _setCurrentView('pc-builder');
+      } else if (path === '/compare') {
+        _setCurrentView('compare');
+      } else if (path === '/dashboard') {
+        _setCurrentView('dashboard');
+      } else {
+        _setCurrentView('home');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleAdminLoginSuccess = (adminUser: User, token: string) => {
+    setUser(adminUser);
+    localStorage.setItem('trust_user', JSON.stringify(adminUser));
+    if (token) {
+      localStorage.setItem('trust_token', token);
+      document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`;
+    }
+    setCurrentView('admin-dashboard');
+  };
+
   useEffect(() => {
     const syncSessionUser = async () => {
       const savedUser = localStorage.getItem('trust_user');
@@ -861,8 +928,16 @@ export default function App() {
           />
         )}
 
-        {/* VIEW 8: ADMINISTRATIVE CONTROL PORTAL */}
-        {currentView === 'admin' && (
+        {/* VIEW 8A: ADMIN LOGIN PORTAL */}
+        {currentView === 'admin-login' && (
+          <AdminLogin 
+            onLoginSuccess={handleAdminLoginSuccess} 
+            setCurrentView={setCurrentView} 
+          />
+        )}
+
+        {/* VIEW 8B: ADMINISTRATIVE CONTROL PORTAL */}
+        {currentView === 'admin-dashboard' && (
           <AdminPanel 
             products={products}
             setProducts={setProducts}

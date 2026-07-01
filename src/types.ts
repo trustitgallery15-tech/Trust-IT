@@ -29,6 +29,10 @@ export interface Product {
   estimatedDelivery?: string;
   views?: number;
   sales?: number;
+  isFeatured?: boolean;
+  isFlashDeal?: boolean;
+  isTrending?: boolean;
+  isBestSeller?: boolean;
   createdAt?: string;
 }
 
@@ -54,6 +58,7 @@ export interface User {
   loyaltyPoints?: number;
   referredBy?: string;
   referralCode?: string;
+  disabled?: boolean;
   createdAt: string;
 }
 
