@@ -1,0 +1,6 @@
+{
+  "name": "Trust IT Gallery",
+  "description": "A high-performance, responsive full-stack e-commerce platform for computer components, IT hardware, gaming accessories, and office equipment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
