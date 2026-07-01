@@ -29,8 +29,16 @@ async function startServer() {
   // Middleware
   app.use(express.json());
 
-  // Connect to MongoDB Atlas (Gracefully falls back if MONGODB_URI is not set)
-  await connectMongo();
+  // Connect to MongoDB Atlas (Gracefully falls back in background if MONGODB_URI is not set/fails)
+  connectMongo().then((connected) => {
+    if (connected) {
+      console.log('MongoDB Atlas: Connection established and synchronized.');
+    } else {
+      console.log('MongoDB Atlas: Operating in Local File Database fallback mode.');
+    }
+  }).catch(err => {
+    console.error('MongoDB Atlas background connection failed:', err);
+  });
 
   // Helper: Secure route auth checks
   function requireAuth(req: any, res: any, next: any) {

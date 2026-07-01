@@ -24,8 +24,23 @@ export default function AdminLogin({ onLoginSuccess, setCurrentView }: AdminLogi
         body: JSON.stringify({ email: username.trim(), password })
       });
 
+      let responseText = '';
+      try {
+        responseText = await res.text();
+      } catch (readErr) {
+        // Fallback if reading fails
+      }
+
       if (res.ok) {
-        const payload = await res.json();
+        let payload: any;
+        try {
+          payload = JSON.parse(responseText);
+        } catch (jsonErr) {
+          setError('Invalid JSON response from server.');
+          setLoading(false);
+          return;
+        }
+
         const userObj = payload.user || payload;
         const tokenVal = payload.token || '';
 
@@ -37,11 +52,17 @@ export default function AdminLogin({ onLoginSuccess, setCurrentView }: AdminLogi
 
         onLoginSuccess(userObj, tokenVal);
       } else {
-        const err = await res.json();
-        setError(err.error || 'Invalid administrator credentials.');
+        let errMessage = 'Invalid administrator credentials.';
+        try {
+          const err = JSON.parse(responseText);
+          errMessage = err.error || errMessage;
+        } catch (jsonErr) {
+          errMessage = `Server error (${res.status}): ${responseText.slice(0, 150)}`;
+        }
+        setError(errMessage);
       }
-    } catch (err) {
-      setError('Connection failed. Please check your backend connection.');
+    } catch (err: any) {
+      setError(`Connection failed: ${err.message || err}`);
     } finally {
       setLoading(false);
     }
