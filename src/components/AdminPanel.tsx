@@ -75,6 +75,7 @@ export default function AdminPanel({
 
   // Multiple Images Management State (within product modal)
   const [tempImageUrls, setTempImageUrls] = useState<string[]>(['']);
+  const [useCustomCategoryText, setUseCustomCategoryText] = useState(false);
 
   // Category Form State
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -259,6 +260,7 @@ export default function AdminPanel({
       specifications: JSON.stringify(prod.specifications, null, 2)
     });
     setTempImageUrls(prod.images.length > 0 ? prod.images : ['']);
+    setUseCustomCategoryText(false);
     setShowProductModal(true);
   };
 
@@ -283,6 +285,7 @@ export default function AdminPanel({
       isBestSeller: false
     });
     setTempImageUrls(['']);
+    setUseCustomCategoryText(false);
     setShowProductModal(true);
   };
 
@@ -1831,20 +1834,51 @@ export default function AdminPanel({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Product Category</label>
-                  <select
-                    value={productForm.category}
-                    onChange={e => setProductForm(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none"
-                  >
-                    {categories.map(c => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                    <option value="Processors (CPU)">Processors (CPU)</option>
-                    <option value="Motherboards">Motherboards</option>
-                    <option value="RAM Memory">RAM Memory</option>
-                    <option value="Graphics Cards (GPU)">Graphics Cards (GPU)</option>
-                  </select>
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-bold uppercase text-gray-500">Product Category</label>
+                    <button
+                      type="button"
+                      onClick={() => setUseCustomCategoryText(!useCustomCategoryText)}
+                      className="text-[9px] font-semibold text-blue-600 hover:underline"
+                    >
+                      {useCustomCategoryText ? 'Select from list' : 'Type custom category'}
+                    </button>
+                  </div>
+                  {useCustomCategoryText ? (
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. RAM, Graphics Cards, Casing..."
+                      value={productForm.category}
+                      onChange={e => setProductForm(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none"
+                    />
+                  ) : (
+                    <select
+                      value={productForm.category}
+                      onChange={e => setProductForm(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none"
+                    >
+                      {categories.map(c => (
+                        <option key={c.id} value={c.name}>{c.name}</option>
+                      ))}
+                      <option value="RAM">RAM</option>
+                      <option value="Graphics Cards">Graphics Cards</option>
+                      <option value="Casing">Casing</option>
+                      <option value="Processors (CPU)">Processors (CPU)</option>
+                      <option value="Motherboards">Motherboards</option>
+                      <option value="SSD">SSD</option>
+                      <option value="PC Cases">PC Cases</option>
+                      <option value="CPU Coolers">CPU Coolers</option>
+                      <option value="Power Supplies">Power Supplies</option>
+                      <option value="Monitors">Monitors</option>
+                      <option value="Mice">Mice</option>
+                      <option value="Keyboards">Keyboards</option>
+                      <option value="Routers">Routers</option>
+                      <option value="Printers">Printers</option>
+                      <option value="CCTV Products">CCTV Products</option>
+                    </select>
+                  )}
                 </div>
 
                 <div className="space-y-1">

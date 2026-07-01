@@ -71,6 +71,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedBrand, setSelectedBrand] = useState<string>('All');
   const [maxPrice, setMaxPrice] = useState<number>(300000);
+  const [priceSort, setPriceSort] = useState<'Default' | 'LowToHigh' | 'HighToLow'>('Default');
 
   // Global transactional states
   const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([]);
@@ -356,6 +357,19 @@ export default function App() {
     return matchesSearch && matchesCategory && matchesBrand && matchesPrice;
   });
 
+  // Sort Logic on top of Filter Logic
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const priceA = a.discountPrice || a.price;
+    const priceB = b.discountPrice || b.price;
+    if (priceSort === 'LowToHigh') {
+      return priceA - priceB;
+    }
+    if (priceSort === 'HighToLow') {
+      return priceB - priceA;
+    }
+    return 0;
+  });
+
   // Extract all unique brand names in the matching products
   const uniqueBrands = Array.from(new Set(products.map(p => p.brand)));
 
@@ -590,13 +604,14 @@ export default function App() {
                         setSelectedBrand('All');
                         setMaxPrice(300000);
                         setSearchQuery('');
+                        setPriceSort('Default');
                       }}
                       className="text-[10px] font-bold text-blue-600 hover:underline"
                     >
                       Reset All
                     </button>
                   </div>
-
+ 
                   {/* Category select Filter */}
                   <div className="space-y-2">
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Select Category</label>
@@ -607,8 +622,8 @@ export default function App() {
                     >
                       <option value="All">All Categories</option>
                       {[
-                        'Computer Components', 'Graphics Cards', 'Processors (CPU)', 'Motherboards', 'RAM', 'SSD',
-                        'HDD', 'CPU Coolers', 'Power Supplies', 'PC Cases', 'Monitors', 'Keyboards', 'Mice',
+                        'Computer Components', 'Graphics Cards', 'GPU', 'Processors (CPU)', 'Motherboards', 'RAM', 'SSD',
+                        'Casing', 'HDD', 'CPU Coolers', 'Power Supplies', 'PC Cases', 'Monitors', 'Keyboards', 'Mice',
                         'Mouse Pads', 'Gaming Accessories', 'Headphones', 'Speakers', 'Webcams', 'Routers',
                         'Networking Devices', 'Printers', 'Printer Toners', 'Ink Cartridges', 'Laptop Accessories',
                         'Office Equipment', 'CCTV Products', 'UPS', 'USB Devices', 'Cables', 'Storage Devices',
@@ -618,7 +633,7 @@ export default function App() {
                       ))}
                     </select>
                   </div>
-
+ 
                   {/* Brand select Filter */}
                   <div className="space-y-2">
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Manufacturer / Brand</label>
@@ -633,7 +648,7 @@ export default function App() {
                       ))}
                     </select>
                   </div>
-
+ 
                   {/* Pricing slider range Filter */}
                   <div className="space-y-2.5">
                     <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-wider">
@@ -649,6 +664,49 @@ export default function App() {
                       onChange={e => setMaxPrice(parseInt(e.target.value))}
                       className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                     />
+                  </div>
+
+                  {/* Price sorting button selection (Separate Section) */}
+                  <div className="space-y-2 pt-1 border-t border-gray-50">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sort by Price</label>
+                    <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl">
+                      <button
+                        type="button"
+                        id="btn-sort-default"
+                        onClick={() => setPriceSort('Default')}
+                        className={`py-1.5 px-1.5 text-center text-[10px] font-bold rounded-lg transition-all ${
+                          priceSort === 'Default'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-500 hover:text-gray-900'
+                        }`}
+                      >
+                        Default
+                      </button>
+                      <button
+                        type="button"
+                        id="btn-sort-low-high"
+                        onClick={() => setPriceSort('LowToHigh')}
+                        className={`py-1.5 px-1.5 text-center text-[10px] font-bold rounded-lg transition-all ${
+                          priceSort === 'LowToHigh'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-500 hover:text-gray-900'
+                        }`}
+                      >
+                        Low → High
+                      </button>
+                      <button
+                        type="button"
+                        id="btn-sort-high-low"
+                        onClick={() => setPriceSort('HighToLow')}
+                        className={`py-1.5 px-1.5 text-center text-[10px] font-bold rounded-lg transition-all ${
+                          priceSort === 'HighToLow'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-500 hover:text-gray-900'
+                        }`}
+                      >
+                        High → Low
+                      </button>
+                    </div>
                   </div>
 
                 </div>
@@ -672,7 +730,7 @@ export default function App() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                    {filteredProducts.map((prod) => (
+                    {sortedProducts.map((prod) => (
                       <ProductCard
                         key={prod.id}
                         product={prod}
