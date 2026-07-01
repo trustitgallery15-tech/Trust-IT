@@ -20,6 +20,18 @@ export default function AdminPanel({
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'analytics' | 'products' | 'orders' | 'coupons' | 'b2b' | 'banners' | 'logs' | 'settings'>('analytics');
   
+  // Custom fetch wrapper to automatically inject JWT Bearer Token
+  const fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    const token = localStorage.getItem('trust_token');
+    const headers = {
+      ...(init?.headers || {}),
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+    // Don't override content-type if not specified or already overridden, but let's keep standard headers
+    return window.fetch(input, { ...init, headers });
+  };
+  
   // Loaded collections
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);

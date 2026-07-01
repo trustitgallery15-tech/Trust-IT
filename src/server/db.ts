@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { Product, User, Order, Review, Coupon, HeroBanner, ActivityLog, WebsiteSettings } from '../types.js';
+import { Product, User, Order, Review, Coupon, HeroBanner, ActivityLog, WebsiteSettings, Category, Brand } from '../types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +18,8 @@ interface DatabaseSchema {
   banners: HeroBanner[];
   logs: ActivityLog[];
   settings: WebsiteSettings;
+  categories: Category[];
+  brands: Brand[];
 }
 
 // Initial seed data to ensure the platform feels like a real IT shop instantly
@@ -620,7 +622,19 @@ export function initializeDb() {
       coupons: INITIAL_COUPONS,
       banners: INITIAL_BANNERS,
       logs: INITIAL_LOGS,
-      settings: DEFAULT_SETTINGS
+      settings: DEFAULT_SETTINGS,
+      categories: Array.from(new Set(INITIAL_PRODUCTS.map(p => p.category))).map((catName, idx) => ({
+        id: `cat-${catName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+        name: catName,
+        imageUrl: 'https://images.unsplash.com/photo-1591405351990-4726e331f141?w=100&q=80',
+        order: idx + 1,
+        isVisible: true
+      })),
+      brands: Array.from(new Set(INITIAL_PRODUCTS.map(p => p.brand))).map(brandName => ({
+        id: `brand-${brandName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+        name: brandName,
+        logoUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&q=80'
+      }))
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     console.log('Database seeded successfully.');

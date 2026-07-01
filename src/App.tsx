@@ -189,9 +189,17 @@ export default function App() {
       });
 
       if (res.ok) {
-        const loggedUser = await res.json();
-        setUser(loggedUser);
-        localStorage.setItem('trust_user', JSON.stringify(loggedUser));
+        const payload = await res.json();
+        const userObj = payload.user || payload;
+        const tokenVal = payload.token || '';
+        
+        setUser(userObj);
+        localStorage.setItem('trust_user', JSON.stringify(userObj));
+        if (tokenVal) {
+          localStorage.setItem('trust_token', tokenVal);
+          document.cookie = `token=${tokenVal}; path=/; max-age=${7 * 24 * 60 * 60}`;
+        }
+        
         setCurrentView('home');
         // Reset form
         setLoginEmail('');
@@ -223,9 +231,17 @@ export default function App() {
       });
 
       if (res.ok) {
-        const createdUser = await res.json();
-        setUser(createdUser);
-        localStorage.setItem('trust_user', JSON.stringify(createdUser));
+        const payload = await res.json();
+        const userObj = payload.user || payload;
+        const tokenVal = payload.token || '';
+
+        setUser(userObj);
+        localStorage.setItem('trust_user', JSON.stringify(userObj));
+        if (tokenVal) {
+          localStorage.setItem('trust_token', tokenVal);
+          document.cookie = `token=${tokenVal}; path=/; max-age=${7 * 24 * 60 * 60}`;
+        }
+
         setCurrentView('home');
         // Reset form
         setRegisterName('');
@@ -245,6 +261,8 @@ export default function App() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('trust_user');
+    localStorage.removeItem('trust_token');
+    document.cookie = 'token=; path=/; max-age=0';
     setCurrentView('home');
   };
 

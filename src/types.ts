@@ -164,3 +164,18 @@ export interface SystemSettings {
   emergencyStatusAlert: string;
 }
 export type LogEntry = ActivityLog;
+
+export interface Category {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  order: number;
+  isVisible: boolean;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  logoUrl?: string;
+}
+
