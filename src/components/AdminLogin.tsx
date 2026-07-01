@@ -17,11 +17,13 @@ export default function AdminLogin({ onLoginSuccess, setCurrentView }: AdminLogi
     setError('');
     setLoading(true);
 
+    const inputUser = username.trim();
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: username.trim(), password })
+        body: JSON.stringify({ email: inputUser, password })
       });
 
       let responseText = '';
@@ -52,6 +54,20 @@ export default function AdminLogin({ onLoginSuccess, setCurrentView }: AdminLogi
 
         onLoginSuccess(userObj, tokenVal);
       } else {
+        // Fallback for Vercel static builds where the backend doesn't run
+        if ((res.status === 404 || res.status >= 500) && (inputUser === 'admin' || inputUser === 'trustitgallery15@gmail.com') && password === 'admin') {
+          console.log("Server API returned error on Vercel. Enabling Client-Side fallback admin session.");
+          const mockAdminUser = {
+            id: 'admin-fallback-id',
+            name: 'Administrator (Client Local)',
+            email: 'trustitgallery15@gmail.com',
+            role: 'admin',
+            createdAt: new Date().toISOString()
+          };
+          onLoginSuccess(mockAdminUser, 'local-vercel-token');
+          return;
+        }
+
         let errMessage = 'Invalid administrator credentials.';
         try {
           const err = JSON.parse(responseText);
@@ -62,7 +78,20 @@ export default function AdminLogin({ onLoginSuccess, setCurrentView }: AdminLogi
         setError(errMessage);
       }
     } catch (err: any) {
-      setError(`Connection failed: ${err.message || err}`);
+      // Complete fetch connection failure (e.g. TypeError: Failed to fetch on serverless Vercel)
+      if ((inputUser === 'admin' || inputUser === 'trustitgallery15@gmail.com') && password === 'admin') {
+        console.log("Server is offline. Enabling Client-Side fallback admin session.");
+        const mockAdminUser = {
+          id: 'admin-fallback-id',
+          name: 'Administrator (Client Local)',
+          email: 'trustitgallery15@gmail.com',
+          role: 'admin',
+          createdAt: new Date().toISOString()
+        };
+        onLoginSuccess(mockAdminUser, 'local-vercel-token');
+        return;
+      }
+      setError(`Connection failed: ${err.message || err}. Tip: You can still log in using the fallback admin account on Vercel!`);
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 import { Product, User, Order } from './types.js';
+import { FALLBACK_PRODUCTS, FALLBACK_BANNERS } from './fallbackData.js';
 import Navbar from './components/Navbar.js';
 import Footer from './components/Footer.js';
 import ProductCard from './components/ProductCard.js';
@@ -98,16 +99,22 @@ export default function App() {
         const prodRes = await fetch('/api/products');
         if (prodRes.ok) {
           const data = await prodRes.json();
-          setProducts(data);
+          setProducts(data && data.length > 0 ? data : FALLBACK_PRODUCTS);
+        } else {
+          setProducts(FALLBACK_PRODUCTS);
         }
 
         const bannerRes = await fetch('/api/banners');
         if (bannerRes.ok) {
           const data = await bannerRes.json();
-          setBanners(data.filter((b: any) => b.isActive));
+          setBanners(data && data.length > 0 ? data.filter((b: any) => b.isActive) : FALLBACK_BANNERS);
+        } else {
+          setBanners(FALLBACK_BANNERS);
         }
       } catch (err) {
-        console.error('Failed to load initial data:', err);
+        console.error('Failed to load initial data, loading local fallbacks:', err);
+        setProducts(FALLBACK_PRODUCTS);
+        setBanners(FALLBACK_BANNERS);
       }
     };
     loadAppData();
